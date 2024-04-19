@@ -2,6 +2,7 @@ TODO:
 Beta testing
 
 CHANGELOG:
+- 4/19: 0.5.2, updated help menu
 - 4/19: 0.5.0, fixed app loading/saving bar not updating and a bug preventing app launching
 - 4/18: 0.4.0, finished app library, implemented Apps -> Add.
 - 4/18: 0.3.0, implemented app library

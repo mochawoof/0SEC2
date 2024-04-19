@@ -24,7 +24,7 @@ public class App extends JFrame {
     private JMenuItem extraResetConfig;
     
     private JMenuItem helpAbout;
-    private JMenuItem helpHelpDoc;
+    private JMenuItem helpHelpLink;
     
     private JScrollPane content;
     private JPanel contentPanel;
@@ -424,10 +424,10 @@ public class App extends JFrame {
                 );
             }
         });
-        helpHelpDoc.addActionListener(new ActionListener() {
+        helpHelpLink.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    Desktop.getDesktop().browse(new java.net.URI(Main.HELP_DOC));
+                    Desktop.getDesktop().browse(new java.net.URI(Main.HELP_LINK));
                 } catch (Exception x) {
                     Logger.error("Couldn't open help doc!", x, true);
                 }
@@ -560,8 +560,8 @@ public class App extends JFrame {
         bar.add(helpMenu);
             helpAbout = new JMenuItem("About", KeyEvent.VK_A);
             helpMenu.add(helpAbout);
-            helpHelpDoc = new JMenuItem("Help Doc", KeyEvent.VK_H);
-            helpMenu.add(helpHelpDoc);
+            helpHelpLink = new JMenuItem("Help Link", KeyEvent.VK_H);
+            helpMenu.add(helpHelpLink);
         
         //Update everything early for responsiveness
         updateSubmenus();

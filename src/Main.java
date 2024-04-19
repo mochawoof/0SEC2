@@ -1,8 +1,8 @@
 public class Main {
     public static String TITLE = "0SEC2";
-    public static String VERSION = "0.5.1"; //Change this if you're saving your changes!
+    public static String VERSION = "0.5.2"; //Change this if you're saving your changes!
     public static String VERSION_TAG = "BETA DEV";
-    public static String HELP_DOC = "https://docs.google.com/document/d/1pqTYOJwldXkmWDo5EaNCYSB_EsEPETGbAzjkMDlkcTE";
+    public static String HELP_LINK = "https://mochawoof.github.io/0sec2";
     public static String CREDIT = "❤ Dog & Contributors"; //Add your name here!!!
 
     public static String[] configDefs = new String[] {
