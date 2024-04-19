@@ -1,0 +1,1 @@
+powershell "javaw -jar 0sec2.jar"
