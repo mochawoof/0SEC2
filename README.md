@@ -1,2 +1,2 @@
-# 0sec2
+# 0SEC2
 App management software
