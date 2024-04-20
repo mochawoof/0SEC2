@@ -501,6 +501,7 @@ public class App extends JFrame {
         setTitle(Main.TITLE + " " + Main.VERSION_TAG);
         setIconImage(ResourceHelper.getResourceAsImage("/res/icon.png"));
         setLayout(new BorderLayout());
+        setLocationRelativeTo(null);
         
         JMenuBar bar = new JMenuBar();
         add(bar, BorderLayout.PAGE_START);
