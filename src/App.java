@@ -184,7 +184,7 @@ public class App extends JFrame {
                 String foundIcon = "";
                 for (File f : dir.listFiles()) {
                     String n = f.getName();
-                    if (n.endsWith(".exe")) {
+                    if (n.endsWith(".exe") && !n.contains(" ")) {
                         foundExe = f.getName();
                     } else if (n.endsWith(".png") || n.endsWith(".jpg") || n.endsWith(".jpeg")) {
                         foundIcon = f.getName();
