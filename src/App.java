@@ -231,76 +231,80 @@ public class App extends JFrame {
                 File meta = rawApp.toPath().resolve(".0meta").toFile();
                 //First, check if meta file exists
                 if (isValidApp(rawApp)) {
-                    Config metaConfig = new Config(meta.getAbsolutePath(), new String[] {
-                        "name=" + rawApp.getName()
-                    }, false);
-                    //Check if meta file is valid
-                    File exeFile = rawApp.toPath().resolve(metaConfig.get("executable")).toFile();
-                    if (metaConfig.loaded && exeFile.exists() && !metaConfig.get("executable").contains(" ")) {
-                        apps.add(rawApp);
-                        //Make button, grab icon
-                        JButton b = new JButton(metaConfig.get("name"));
-                        b.setVerticalTextPosition(SwingConstants.BOTTOM);
-                        b.setHorizontalTextPosition(SwingConstants.CENTER);
-                        b.setToolTipText(rawApp.getName());
-                        //Listen for double-click
-                        b.addMouseListener(new MouseListener() {
-                            public void mouseExited(MouseEvent e) {}
-                            public void mouseEntered(MouseEvent e) {}
-                            public void mouseReleased(MouseEvent e) {}
-                            public void mousePressed(MouseEvent e) {}
-                            public void mouseClicked(MouseEvent e) {
-                                if (e.getClickCount() > 1) {
+                    try {
+                        Config metaConfig = new Config(meta.getAbsolutePath(), new String[] {
+                            "name=" + rawApp.getName()
+                        }, false);
+                        //Check if meta file is valid
+                        File exeFile = rawApp.toPath().resolve(metaConfig.get("executable")).toFile();
+                        if (metaConfig.loaded && exeFile.exists() && !metaConfig.get("executable").contains(" ")) {
+                            apps.add(rawApp);
+                            //Make button, grab icon
+                            JButton b = new JButton(metaConfig.get("name"));
+                            b.setVerticalTextPosition(SwingConstants.BOTTOM);
+                            b.setHorizontalTextPosition(SwingConstants.CENTER);
+                            b.setToolTipText(rawApp.getName());
+                            //Listen for double-click
+                            b.addMouseListener(new MouseListener() {
+                                public void mouseExited(MouseEvent e) {}
+                                public void mouseEntered(MouseEvent e) {}
+                                public void mouseReleased(MouseEvent e) {}
+                                public void mousePressed(MouseEvent e) {}
+                                public void mouseClicked(MouseEvent e) {
+                                    if (e.getClickCount() > 1) {
+                                        launchApp(rawApp, metaConfig);
+                                    }
+                                }
+                            });
+                            
+                            //Popup
+                            JPopupMenu popup = new JPopupMenu("Manage " + metaConfig.get("name"));
+                            
+                            JMenuItem launchItem = new JMenuItem("Launch");
+                            launchItem.addActionListener(new ActionListener() {
+                                public void actionPerformed(ActionEvent e) {
                                     launchApp(rawApp, metaConfig);
                                 }
-                            }
-                        });
-                        
-                        //Popup
-                        JPopupMenu popup = new JPopupMenu("Manage " + metaConfig.get("name"));
-                        
-                        JMenuItem launchItem = new JMenuItem("Launch");
-                        launchItem.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                launchApp(rawApp, metaConfig);
-                            }
-                        });
-                        popup.add(launchItem);
-                        
-                        JMenuItem removeItem = new JMenuItem("Remove");
-                        removeItem.addActionListener(new ActionListener() {
-                            public void actionPerformed(ActionEvent e) {
-                                removeApp(rawApp);
-                            }
-                        });
-                        popup.add(removeItem);
-                        
-                        b.addMouseListener(new MouseAdapter() {
-                            public void mousePressed(MouseEvent e) {checkPopup(e);}
-                            public void mouseReleased(MouseEvent e) {checkPopup(e);}
-                            public void mouseClicked(MouseEvent e) {checkPopup(e);}
-                            public void checkPopup(MouseEvent e) {
-                                if (e.isPopupTrigger()) {
-                                    popup.show(e.getComponent(), e.getX(), e.getY());
+                            });
+                            popup.add(launchItem);
+                            
+                            JMenuItem removeItem = new JMenuItem("Remove");
+                            removeItem.addActionListener(new ActionListener() {
+                                public void actionPerformed(ActionEvent e) {
+                                    removeApp(rawApp);
                                 }
+                            });
+                            popup.add(removeItem);
+                            
+                            b.addMouseListener(new MouseAdapter() {
+                                public void mousePressed(MouseEvent e) {checkPopup(e);}
+                                public void mouseReleased(MouseEvent e) {checkPopup(e);}
+                                public void mouseClicked(MouseEvent e) {checkPopup(e);}
+                                public void checkPopup(MouseEvent e) {
+                                    if (e.isPopupTrigger()) {
+                                        popup.show(e.getComponent(), e.getX(), e.getY());
+                                    }
+                                }
+                            });
+                            
+                            File icon = rawApp.toPath().resolve(metaConfig.get("icon")).toFile();
+                            Image bImage;
+                            if (icon.exists() && icon.isFile()) {
+                                bImage = FileHelper.getFileAsImage(icon.getAbsolutePath());
+                            } else {
+                                bImage = ResourceHelper.getResourceAsImage("/res/default-app-icon.png");
                             }
-                        });
-                        
-                        File icon = rawApp.toPath().resolve(metaConfig.get("icon")).toFile();
-                        Image bImage;
-                        if (icon.exists() && icon.isFile()) {
-                            bImage = FileHelper.getFileAsImage(icon.getAbsolutePath());
+                            b.setIcon(new ImageIcon(bImage
+                                .getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_FAST))
+                            );
+                            b.setSize(ICON_WIDTH, ICON_HEIGHT);
+                            appButtons.add(b);
+                            contentPanel.add(b);
                         } else {
-                            bImage = ResourceHelper.getResourceAsImage("/res/default-app-icon.png");
+                            Logger.info("Invalid app meta: " + rawApp.toString());
                         }
-                        b.setIcon(new ImageIcon(bImage
-                            .getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_FAST))
-                        );
-                        b.setSize(ICON_WIDTH, ICON_HEIGHT);
-                        appButtons.add(b);
-                        contentPanel.add(b);
-                    } else {
-                        Logger.info("Invalid app meta: " + rawApp.toString());
+                    } catch (Exception e) {
+                        Logger.error("Error updating app!", e, false);
                     }
                 } else {
                     Logger.info("Invalid app: " + rawApp.toString());
