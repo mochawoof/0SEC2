@@ -2,6 +2,7 @@
 - Beta testing!!!
 
 ## CHANGELOG
+- 4/21: 0.5.5, fixed display issue when an invalid app icon is provided
 - 4/20: 0.5.4, fixed app updating so if an update fails, the others will still load.
 - 4/20: 0.5.3, fixed bug when automatically adding apps.
 - 4/19: 0.5.2, updated help menu.
