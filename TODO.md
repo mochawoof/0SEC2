@@ -2,6 +2,7 @@
 - Beta testing!!!
 
 ## CHANGELOG
+- 4/24: 1.0.0, release! Added Apps -> Run, allowing launching standalone programs without needing to add them as apps.
 - 4/24: 0.5.6, fixed Force Reload never turning off.
 - 4/21: 0.5.5, fixed display issue when an invalid app icon is provided.
 - 4/20: 0.5.4, fixed app updating so if an update fails, the others will still load.
