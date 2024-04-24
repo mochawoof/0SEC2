@@ -1,9 +1,12 @@
+[![GitHub Release](https://img.shields.io/github/v/release/mochawoof/0sec2)](https://github.com/mochawoof/0sec2/releases/latest)
+[![GitHub Downloads (specific asset, latest release)](https://img.shields.io/github/downloads/mochawoof/0sec2/latest/0sec2.zip)](https://github.com/mochawoof/0sec2/releases/latest/download/0sec2.zip)
+
 # About
 Welcome to the 0SEC2 repo! Here you can take a look at the source code, make changes and install new versions.
 
 ## Installation
 - Make sure you have Java installed! 0SEC2 works best with Java 8.
-- Download the latest release from [here](https://github.com/mochawoof/0sec2/releases/latest/download/0sec2.zip) and extract it.
+- Download the latest release and extract it.
 - Just double-click 0SEC2.bat to run!
 
 ## Adding Apps
