@@ -136,6 +136,7 @@ public class App extends JFrame {
         new SwingWorker() {
             protected Object doInBackground() {
                 if (!toLaunch.exists() || forceReload) {
+                    forceReload = false;
                     FileHelper.copyDir(app.getPath(), toLaunch.getAbsolutePath(), true, saveBar);
                 }
                 return null;
