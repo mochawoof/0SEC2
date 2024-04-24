@@ -13,6 +13,7 @@ public class App extends JFrame {
     private JMenu saveOnClose;
     private ButtonGroup saveOnCloseSubmenu;
     private JMenuItem appsAdd;
+    private JMenuItem appsRun;
     private JMenuItem appsUpdate;
     private JMenuItem appsForceReload;
     private boolean forceReload = false;
@@ -69,14 +70,14 @@ public class App extends JFrame {
     /**
      * Running magic
      */
-    private void runApp(File app, Config metaConfig, File toLaunch) {
+    private void runApp(File app, String executable, File toLaunch) {
         // Run app in new thread
         new Thread() {
             public void run() {
                 Process process;
                 try {
                     process = Runtime.getRuntime()
-                            .exec(toLaunch.toPath().resolve(metaConfig.get("executable")).toFile().getAbsolutePath());
+                            .exec(toLaunch.toPath().resolve(executable).toFile().getAbsolutePath());
                     unbusy();
                     openApps.add(app);
                     openProcesses.add(process);
@@ -100,7 +101,7 @@ public class App extends JFrame {
                     }
 
                     // Copy everything back
-                    if (Main.config.get("saveOnClose").equals("1")) {
+                    if (Main.config.get("saveOnClose").equals("1") && app.isDirectory()) {
                         FileHelper.copyDir(toLaunch.getAbsolutePath(), app.getPath(), true, saveBar);
                     }
                     unbusy();
@@ -126,12 +127,12 @@ public class App extends JFrame {
             }
         }
 
-        // Copy app files if they aren't already, or if a reload is forced
-        Path idFolder = Paths.get("C:\\Windows\\Temp\\0\\");
+        Path idFolder = Paths.get(Main.config.get("tempDir"));
         File toLaunch = idFolder.resolve(app.getName()).toFile();
         System.out.println("Launching " + toLaunch.getAbsolutePath() + "...");
 
-        // SwingWorker to prevent event queue blocking
+        // Copy app files if they aren't already, or if a reload is forced
+        // Use SwingWorker to prevent event queue blocking
         busy();
         new SwingWorker() {
             protected Object doInBackground() {
@@ -144,20 +145,20 @@ public class App extends JFrame {
 
             protected void done() {
                 unbusy();
-                runApp(app, metaConfig, toLaunch);
+                runApp(app, metaConfig.get("executable"), toLaunch);
             }
         }.execute();
     }
 
     /**
-     * Copies an app folder to ./apps/
+     * Copies an app folder to the given folder
      */
-    private void addApp(File app) {
+    private void addApp(File app, String folder) {
         busy();
         new SwingWorker() {
             protected Object doInBackground() {
                 File dir = app;
-                File dest = Paths.get("./apps").resolve(dir.getName()).toFile();
+                File dest = Paths.get(folder).resolve(dir.getName()).toFile();
                 if (dest.exists()) {
                     Logger.error("App already installed!", true);
                 } else {
@@ -189,6 +190,8 @@ public class App extends JFrame {
         File meta = dir.toPath().resolve(".0meta").toFile();
         if (meta.exists()) {
             return true;
+        } else if (dir.isFile()) {
+            return false;
         } else {
             try {
                 meta.createNewFile();
@@ -255,7 +258,12 @@ public class App extends JFrame {
                         JButton b = new JButton(metaConfig.get("name"));
                         b.setVerticalTextPosition(SwingConstants.BOTTOM);
                         b.setHorizontalTextPosition(SwingConstants.CENTER);
-                        b.setToolTipText(rawApp.getName());
+                        //Set description if meta has it
+                        if (metaConfig.get("description") != null) {
+                            b.setToolTipText(metaConfig.get("description"));
+                        } else {
+                            b.setToolTipText(rawApp.getName());
+                        }
                         // Listen for double-click
                         b.addMouseListener(new MouseListener() {
                             public void mouseExited(MouseEvent e) {
@@ -342,7 +350,7 @@ public class App extends JFrame {
             showHint = true;
         }
         if (showHint) {
-            messageBox("Hint", "There's nothing in here! See Help -> Help Doc to learn how to install apps.");
+            contentPanel.add(new JLabel("There's nothing in here! See Help -> " + helpHelpLink.getText() + " to learn how to install apps."));
         }
         revalidate();
         repaint();
@@ -369,6 +377,7 @@ public class App extends JFrame {
 
         try {
             UIManager.setLookAndFeel("com.formdev.flatlaf." + Main.config.get("extraTheme"));
+            UIManager.put("TitlePane.centerTitle", true);
             SwingUtilities.updateComponentTreeUI(this);
         } catch (Exception e) {
             Logger.error("Couldn't load theme, resetting to default...", e, false);
@@ -420,7 +429,17 @@ public class App extends JFrame {
                 JFileChooser chooser = new JFileChooser(Main.config.get("appsAddLastDir"));
                 chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 if (chooser.showOpenDialog(Main.app) == JFileChooser.APPROVE_OPTION) {
-                    addApp(chooser.getSelectedFile());
+                    addApp(chooser.getSelectedFile(), "./apps");
+                }
+            }
+        });
+        appsRun.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser chooser = new JFileChooser(Main.config.get("appsAddLastDir"));
+                if (chooser.showOpenDialog(Main.app) == JFileChooser.APPROVE_OPTION) {
+                    FileHelper.copyFile(chooser.getSelectedFile().getAbsolutePath(), Main.config.get("tempDir"), true);
+                    Main.config.set("appsAddLastDir", chooser.getSelectedFile().toPath().getParent().toFile().getAbsolutePath());
+                    runApp(chooser.getSelectedFile(), "", Paths.get(Main.config.get("tempDir")).resolve(chooser.getSelectedFile().getName()).toFile());
                 }
             }
         });
@@ -485,7 +504,7 @@ public class App extends JFrame {
                     java.util.List<File> dropped = (java.util.List<File>) e.getTransferable()
                             .getTransferData(DataFlavor.javaFileListFlavor);
                     if (dropped.size() > 0) {
-                        addApp(dropped.get(0));
+                        addApp(dropped.get(0), "./apps");
                     }
                 } catch (Exception x) {
                     Logger.error("Drag n drop failed!", x, false);
@@ -548,9 +567,9 @@ public class App extends JFrame {
         JMenuBar bar = new JMenuBar();
         add(bar, BorderLayout.PAGE_START);
 
-        JMenu appMenu = new JMenu("Apps");
-        appMenu.setMnemonic(KeyEvent.VK_A);
-        bar.add(appMenu);
+        JMenu appsMenu = new JMenu("Apps");
+        appsMenu.setMnemonic(KeyEvent.VK_A);
+        bar.add(appsMenu);
         saveOnClose = new JMenu("Save on Close...");
         saveOnClose.setMnemonic(KeyEvent.VK_S);
         saveOnCloseSubmenu = makeSubmenu(saveOnClose, new String[] { "1", "0" }, new String[] { "On", "Off" },
@@ -560,15 +579,17 @@ public class App extends JFrame {
                         updateSubmenus();
                     }
                 });
-        appMenu.add(saveOnClose);
-        appsAdd = new JMenuItem("Add", KeyEvent.VK_A);
-        appMenu.add(appsAdd);
+        appsMenu.add(saveOnClose);
+        appsAdd = new JMenuItem("Add...", KeyEvent.VK_A);
+        appsMenu.add(appsAdd);
+        appsRun = new JMenuItem("Run...", KeyEvent.VK_R);
+        appsMenu.add(appsRun);
         appsUpdate = new JMenuItem("Update", KeyEvent.VK_U);
-        appMenu.add(appsUpdate);
+        appsMenu.add(appsUpdate);
         appsCloseAll = new JMenuItem("Close All", KeyEvent.VK_C);
-        appMenu.add(appsCloseAll);
+        appsMenu.add(appsCloseAll);
         appsForceReload = new JMenuItem("Force Reload", KeyEvent.VK_F);
-        appMenu.add(appsForceReload);
+        appsMenu.add(appsForceReload);
 
         JMenu extraMenu = new JMenu("Extra");
         extraMenu.setMnemonic(KeyEvent.VK_E);
